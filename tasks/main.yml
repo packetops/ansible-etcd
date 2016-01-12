@@ -1,6 +1,29 @@
 ---
+
+- yum: name={{ item }} state=latest update_cache=yes
+  with_items:
+  - rsync
+  - nmap
+  - libselinux-python
+
 - name: download etcd
-  get_url: url={{ etcd_download_url }} dest={{ etcd_download_dir }}/{{ etcd_download_filename }}
+  shell: curl -L {{ etcd_download_url }} -o {{ etcd_download_dir }}/{{ etcd_download_filename }}   
+  #shell: curl -L https://github.com/coreos/etcd/releases/download/v2.2.3/etcd-v2.2.3-linux-amd64.tar.gz -o {{ etcd_download_dir }}/{{ etcd_download_filename }}   
+#https://github.com/coreos/etcd.git
+#  get_url: validate_certs=False url= dest=
+# validate_certs=False ... unfortunately centos 6.7 ships with a Python that doesn't support SNI 
+# see this issue for more information ... https://github.com/ansible/ansible/issues/12161
+
+- name: verify etcd
+  stat: path={{ etcd_download_dir }}/{{ etcd_download_filename }} checksum_algorithm=sha1
+  register: st
+
+- debug: msg="st == {{st}}"
+
+- debug: msg="original checksum - '{{ etcd_download_checksum }}' "
+
+- fail: msg="etcd checksum failed"
+  when: st.stat.checksum != '{{ etcd_download_checksum }}'
 
 - name: unarchive etcd
   unarchive: copy=no
@@ -16,7 +39,8 @@
     - etcd
     - etcdctl
 
-- name: etcd upstart service
-  template: src=etc/init/etcd.conf.j2 dest=/etc/init/etcd.conf
-  notify:
-    - restart etcd
+- name: etcd init script
+  template: src=etc/init/etcd-init.conf.j2 dest=/etc/init.d/etcd
+
+- name: enable and start etcd init script
+  service: name=etcd enabled=yes state=started

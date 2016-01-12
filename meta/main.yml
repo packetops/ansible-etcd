@@ -1,6 +1,6 @@
 ---
 galaxy_info:
-  author: John Dewey
+  author: Bryan Hunt/John Dewey
   description: Install and manage etcd.
   company:
   license: MIT

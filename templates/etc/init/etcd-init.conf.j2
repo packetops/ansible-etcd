@@ -1,0 +1,122 @@
+#!/bin/bash
+# Startup script for etcd
+#
+# chkconfig: 2345 20 80
+# description: Starts and stops etcd
+
+. /etc/init.d/functions
+
+prog="etcd"
+ETCD_BIN=$(which etcd 2> /dev/null)
+prog=$(basename "$ETCD_BIN")
+desc="etcd shared configuration and service discovery daemon"
+
+if [[ ! -e $ETCD_BIN ]]; then
+  echo "$prog binary not found."
+  exit 5
+fi
+
+ETCD_LOCKFILE="/var/lock/subsys/$prog"
+ETCD_LOGFILE=/var/log/etcd/etcd.log
+ETCD_PIDFILE=/var/run/etcd.pid
+ETCD_CONFIG=/etc/etcd.conf
+ETCD_EXEC="$ETCD_BIN -config $ETCD_CONFIG"
+
+start() {
+  started=$(status -p "$ETCD_PIDFILE" "$ETCD_BIN")
+  [[ $started =~ running ]] && echo $started && return 1
+
+  echo -n $"Starting $prog: "
+  $ETCD_EXEC 3>&1 2>&1 1>&$ETCD_LOGFILE &
+  RETVAL=$?
+  echo $! > $ETCD_PIDFILE
+  [[ $RETVAL ]] && success || failure
+  [[ $RETVAL ]] && touch "$ETCD_LOCKFILE"
+  return $RETVAL
+}
+
+stop() {
+  echo -n $"Stopping $prog: "
+  killproc -p "$ETCD_PIDFILE" "$ETCD_BIN"
+
+  RETVAL=$?
+  echo
+  [ $RETVAL -eq 0 ] && rm -fr "$ETCD_LOCKFILE"
+  return $RETVAL
+}
+
+case $1 in
+  start)
+    start
+    ;;
+
+  stop)
+    stop
+    ;;
+
+  restart)
+    stop
+    start
+    ;;
+
+  status)
+    status "$ETCD_BIN"
+    RETVAL=$?
+    ;;
+
+  *)
+    echo "Usage: $0 {start|stop|restart|status}"
+    RETVAL=1
+    ;;
+esac
+
+exit $RETVAL
+
+
+
+#{% if etcd_discovery == none and etcd_discovery_srv == none -%}
+#{% macro initial_cluster() -%}
+#{% for host in groups[etcd_peers_group] -%}
+#   {% if loop.last -%}
+#{{ host }}={{ etcd_peer_url_scheme }}://{{ hostvars[host]['ansible_' + etcd_peer_interface]['ipv4']['address'] }}:{{ etcd_peer_port }}
+#   {%- else -%}
+#{{ host }}={{ etcd_peer_url_scheme }}://{{ hostvars[host]['ansible_' + etcd_peer_interface]['ipv4']['address'] }}:{{ etcd_peer_port }},
+#   {%- endif -%}
+#{% endfor -%}
+#{% endmacro -%}
+#{% endif %}
+#
+#script
+#  {{ etcd_cmd }} \
+#    {% if etcd_discovery != none -%}
+#    -discovery {{ etcd_discovery }} \
+#    {% elif etcd_discovery_srv != none -%}
+#    -discovery-srv {{ etcd_discovery_srv }} \
+#    {% else -%}
+#    -initial-cluster-token {{ etcd_initial_cluster_token }} \
+#    -initial-cluster {{ initial_cluster() }} \
+#    -initial-cluster-state {{ etcd_initial_cluster_state }} \
+#    {% endif -%}
+#    -initial-advertise-peer-urls {{ etcd_initial_advertise_peer_urls }} \
+#    -advertise-client-urls {{ etcd_advertise_client_urls }} \
+#    -listen-client-urls {{ etcd_listen_client_urls }} \
+#    -listen-peer-urls {{ etcd_listen_peer_urls }} \
+#    {% if etcd_client_url_scheme == "https" -%}
+#    --cert-file {{ etcd_client_cert_file }} \
+#    --key-file {{ etcd_client_key_file }} \
+#    {% if etcd_client_cert_auth -%}
+#    --client-cert-auth \
+#    --trusted-ca-file {{ etcd_client_trusted_ca_file }} \
+#    {% endif -%}
+#    {% endif -%}
+#    {% if etcd_peer_url_scheme == "https" -%}
+#    --peer-cert-file {{ etcd_peer_cert_file }} \
+#    --peer-key-file {{ etcd_peer_key_file }} \
+#    {% if etcd_peer_client_cert_auth -%}
+#    --peer-client-cert-auth \
+#    --peer-trusted-ca-file {{ etcd_peer_trusted_ca_file }} \
+#    {% endif -%}
+#    {% endif -%}
+#    -data-dir {{ etcd_data_dir }} \
+#    -name {{ inventory_hostname }}
+#end script

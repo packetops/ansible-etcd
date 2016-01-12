@@ -4,12 +4,25 @@ vagrant:
     - "ssh.insert_key = false"
 
   platforms:
-    - name: trusty64
-      box: ubuntu/trusty64
+    - name: centos-6.7
+      box: bento/centos-6.7
+
+#init:
+#    # default platform to populate when doing `molecule init`
+#    platform:
+#      name: trusty64
+#      box: trusty64
+#      box_url: https://vagrantcloud.com/ubuntu/boxes/trusty64/versions/14.04/providers/virtualbox.box
+#    # templates to use when creating files during `molecule init`
+#    templates:
+#      molecule: molecule.yml.j2
+#      playbook: playbook.yml.j2
+#      spec_helper: spec_helper.rb.j2
+#      default_spec: default_spec.rb.j2
 
   providers:
-    - name: virtualbox
-      type: virtualbox
+    - name: vmware_fusion
+      type: vmware_fusion
 
   instances:
     - name: etcd-01
@@ -19,17 +32,17 @@ vagrant:
         - network_name: private_network
           type: dhcp
           auto_config: true
-    - name: etcd-02
-      ansible_groups:
-        - etcd
-      interfaces:
-        - network_name: private_network
-          type: dhcp
-          auto_config: true
-    - name: etcd-03
-      ansible_groups:
-        - etcd
-      interfaces:
-        - network_name: private_network
-          type: dhcp
-          auto_config: true
+  #  - name: etcd-02
+  #    ansible_groups:
+  #      - etcd
+  #    interfaces:
+  #      - network_name: private_network
+  #        type: dhcp
+  #        auto_config: true
+  #  - name: etcd-03
+  #    ansible_groups:
+  #      - etcd
+  #    interfaces:
+  #      - network_name: private_network
+  #        type: dhcp
+  #        auto_config: true
