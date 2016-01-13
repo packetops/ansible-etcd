@@ -6,7 +6,7 @@ A role which installs and manages a clustered etcd (v2.0.9).
 Role ready status
 -----------------
 
-[![Galaxy](http://img.shields.io/badge/galaxy-ansible--etcd-blue.svg?style=flat-square)](https://galaxy.ansible.com/list#/roles/1206)
+[![Galaxy](http://img.shields.io/badge/galaxy-ansible--etcd-blue.svg?style=flat-square)](https://galaxy.ansible.com/list#/roles/6974)
 
 Requirements
 ------------
