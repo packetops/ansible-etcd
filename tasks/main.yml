@@ -3,7 +3,7 @@
 - yum: name={{ item }} state=latest update_cache=yes
   with_items:
   - rsync
-  - ruby 
+  - ruby
   - rubygems
   - nmap
   - libselinux-python
@@ -12,7 +12,7 @@
   gem: name=facter state=latest
 
 - name: download etcd
-  shell: curl -L {{ etcd_download_url }} -o {{ etcd_download_dir }}/{{ etcd_download_filename }}   
+  shell: curl -L {{ etcd_download_url }} -o {{ etcd_download_dir }}/{{ etcd_download_filename }}
 
 - name: verify etcd
   stat: path={{ etcd_download_dir }}/{{ etcd_download_filename }} checksum_algorithm=sha1
@@ -40,13 +40,14 @@
 - name: etcd init script
   template: src=etc/init/etcd-init.conf.j2 dest=/etc/init.d/etcd
 
-## TODO - tighten up security 
-- file: path=/var/lib/etcd owner=etcd group=etcd state=directory mode=0755
-
 - user: name=etcd comment="Etcd daemon" createhome=no home=/var/lib/etcd shell=/bin/sh skeleton=no
 
+## TODO - tighten up security
+- file: path=/var/lib/etcd owner=etcd group=etcd state=directory mode=0755
+
+
 - file: path=/var/log/etcd  owner=root group=etcd state=directory mode=0755
-- file: path=/var/log/etcd/etcd.log owner=root group=etcd mode=0664 
+- file: path=/var/log/etcd/etcd.log owner=root group=etcd mode=0664 state=touch
 
 - name: enable and start etcd init script
   service: name=etcd enabled=yes state=started
