@@ -40,6 +40,8 @@
 - name: etcd init script
   template: src=etc/init/etcd-init.conf.j2 dest=/etc/init.d/etcd
 
+- file: path=/etc/init.d/etcd owner=root group=root state=file mode=0755
+
 - user: name=etcd comment="Etcd daemon" createhome=no home=/var/lib/etcd shell=/bin/sh skeleton=no
 
 ## TODO - tighten up security
