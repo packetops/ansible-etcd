@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: Bryan Hunt/John Dewey
-  description: Install and manage etcd.
+  description: Install and manage etcd - centos only
   company:
   license: MIT
   min_ansible_version: 1.2
