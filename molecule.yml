@@ -28,10 +28,10 @@ vagrant:
     - name: etcd-01
       ansible_groups:
         - etcd
-      interfaces:
-        - network_name: private_network
-          type: dhcp
-          auto_config: true
+  #    interfaces:
+  #      - network_name: private_network
+  #        type: dhcp
+  #        auto_config: true
   #  - name: etcd-02
   #    ansible_groups:
   #      - etcd

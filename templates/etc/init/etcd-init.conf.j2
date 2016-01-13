@@ -1,4 +1,4 @@
-#!/bin/bash --debug
+#!/bin/bash
 # Startup script for etcd
 #
 # chkconfig: 2345 20 80
@@ -75,20 +75,3 @@ case $1 in
 esac
 
 exit $RETVAL
-
-
-
-####
-#script
-#  /usr/sbin/etcd \
-#    #    -initial-cluster-token etcd-cluster-1 \
-#    -initial-cluster ##   #etcd-01-centos-6.7=http://192.168.110.145:2380
-### \
-#    -initial-cluster-state new \
-#    #    -initial-advertise-peer-urls http://192.168.110.145:2380 \
-#    -advertise-client-urls http://192.168.110.145:2379 \
-#    -listen-client-urls http://192.168.110.145:2379 \
-#    -listen-peer-urls http://192.168.110.145:2380 \
-#    #    #    -data-dir /var/cache/etcd/state \
-#    -name etcd-01-centos-6.7
-#end script
