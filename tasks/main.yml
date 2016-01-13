@@ -31,8 +31,6 @@
              dest={{ etcd_download_dir }}
              creates="{{ etcd_download_dir }}/{{ etcd_release }}/etcd"
 
-# TODO(retr0h): Sucks the `copy` module doesn't do this.
-#               We get idempotency from `rsync(1)`.
 - name: copy binaries from archive into etcd dir
   shell: rsync -auv {{ etcd_download_dir }}/{{ etcd_release }}/{{ item }} {{ etcd_dir }}
   with_items:
@@ -42,7 +40,13 @@
 - name: etcd init script
   template: src=etc/init/etcd-init.conf.j2 dest=/etc/init.d/etcd
 
-- user: name=etcd comment="Etcd daemon" createhome=yes home=/var/lib/etcd shell=/bin/sh skeleton=no
+## TODO - tighten up security 
+- file: path=/var/lib/etcd owner=etcd group=etcd state=directory mode=0755
+
+- user: name=etcd comment="Etcd daemon" createhome=no home=/var/lib/etcd shell=/bin/sh skeleton=no
+
+- file: path=/var/log/etcd  owner=root group=etcd state=directory mode=0755
+- file: path=/var/log/etcd/etcd.log owner=root group=etcd mode=0664 
 
 - name: enable and start etcd init script
   service: name=etcd enabled=yes state=started
