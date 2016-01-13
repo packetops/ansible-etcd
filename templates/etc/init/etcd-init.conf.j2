@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --debug
 # Startup script for etcd
 #
 # chkconfig: 2345 20 80
@@ -16,22 +16,26 @@ if [[ ! -e $ETCD_BIN ]]; then
   exit 5
 fi
 
-ETCD_LOCKFILE="/var/lock/subsys/$prog"
-ETCD_LOGFILE=/var/log/etcd/etcd.log
-ETCD_PIDFILE=/var/run/etcd.pid
-ETCD_CONFIG=/etc/etcd.conf
-ETCD_EXEC="$ETCD_BIN -config $ETCD_CONFIG"
+export ETCD_LOCKFILE="/var/lock/subsys/$prog"
+export ETCD_LOGFILE=/var/log/etcd/etcd.log
+export ETCD_PIDFILE=/var/run/etcd.pid
+export ETCD_USER=etcd
 
 start() {
+
   started=$(status -p "$ETCD_PIDFILE" "$ETCD_BIN")
   [[ $started =~ running ]] && echo $started && return 1
 
-  echo -n $"Starting $prog: "
-  $ETCD_EXEC 3>&1 2>&1 1>&$ETCD_LOGFILE &
+  echo -n $"Starting $ETCD_BIN  : "
+ 
+  sudo su etcd -c "$ETCD_BIN --data-dir /var/lib/etcd --listen-peer-urls 'http://0.0.0.0:2380,http://0.0.0.0:7001' --listen-client-urls 'http://0.0.0.0:2379,http://0.0.0.0:4001' --advertise-client-urls 'http://0.0.0.0:2379,http://0.0.0.0:4001' >> /var/log/etcd/etcd.log  2>&1 &"
+  PID=$!
   RETVAL=$?
-  echo $! > $ETCD_PIDFILE
-  [[ $RETVAL ]] && success || failure
-  [[ $RETVAL ]] && touch "$ETCD_LOCKFILE"
+
+  echo "$PID" > $ETCD_PIDFILE
+
+  [ $RETVAL -eq 0 ] && touch $ETCD_LOCKFILE
+  echo
   return $RETVAL
 }
 
@@ -74,49 +78,17 @@ exit $RETVAL
 
 
 
-#{% if etcd_discovery == none and etcd_discovery_srv == none -%}
-#{% macro initial_cluster() -%}
-#{% for host in groups[etcd_peers_group] -%}
-#   {% if loop.last -%}
-#{{ host }}={{ etcd_peer_url_scheme }}://{{ hostvars[host]['ansible_' + etcd_peer_interface]['ipv4']['address'] }}:{{ etcd_peer_port }}
-#   {%- else -%}
-#{{ host }}={{ etcd_peer_url_scheme }}://{{ hostvars[host]['ansible_' + etcd_peer_interface]['ipv4']['address'] }}:{{ etcd_peer_port }},
-#   {%- endif -%}
-#{% endfor -%}
-#{% endmacro -%}
-#{% endif %}
-#
+####
 #script
-#  {{ etcd_cmd }} \
-#    {% if etcd_discovery != none -%}
-#    -discovery {{ etcd_discovery }} \
-#    {% elif etcd_discovery_srv != none -%}
-#    -discovery-srv {{ etcd_discovery_srv }} \
-#    {% else -%}
-#    -initial-cluster-token {{ etcd_initial_cluster_token }} \
-#    -initial-cluster {{ initial_cluster() }} \
-#    -initial-cluster-state {{ etcd_initial_cluster_state }} \
-#    {% endif -%}
-#    -initial-advertise-peer-urls {{ etcd_initial_advertise_peer_urls }} \
-#    -advertise-client-urls {{ etcd_advertise_client_urls }} \
-#    -listen-client-urls {{ etcd_listen_client_urls }} \
-#    -listen-peer-urls {{ etcd_listen_peer_urls }} \
-#    {% if etcd_client_url_scheme == "https" -%}
-#    --cert-file {{ etcd_client_cert_file }} \
-#    --key-file {{ etcd_client_key_file }} \
-#    {% if etcd_client_cert_auth -%}
-#    --client-cert-auth \
-#    --trusted-ca-file {{ etcd_client_trusted_ca_file }} \
-#    {% endif -%}
-#    {% endif -%}
-#    {% if etcd_peer_url_scheme == "https" -%}
-#    --peer-cert-file {{ etcd_peer_cert_file }} \
-#    --peer-key-file {{ etcd_peer_key_file }} \
-#    {% if etcd_peer_client_cert_auth -%}
-#    --peer-client-cert-auth \
-#    --peer-trusted-ca-file {{ etcd_peer_trusted_ca_file }} \
-#    {% endif -%}
-#    {% endif -%}
-#    -data-dir {{ etcd_data_dir }} \
-#    -name {{ inventory_hostname }}
+#  /usr/sbin/etcd \
+#    #    -initial-cluster-token etcd-cluster-1 \
+#    -initial-cluster ##   #etcd-01-centos-6.7=http://192.168.110.145:2380
+### \
+#    -initial-cluster-state new \
+#    #    -initial-advertise-peer-urls http://192.168.110.145:2380 \
+#    -advertise-client-urls http://192.168.110.145:2379 \
+#    -listen-client-urls http://192.168.110.145:2379 \
+#    -listen-peer-urls http://192.168.110.145:2380 \
+#    #    #    -data-dir /var/cache/etcd/state \
+#    -name etcd-01-centos-6.7
 #end script

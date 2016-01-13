@@ -7,7 +7,7 @@ etcd_download_url: "https://github.com/coreos/etcd/releases/download/{{ etcd_ver
 etcd_download_dir: /usr/local/src
 etcd_download_filename: "{{ etcd_release }}.tar.gz"
 etcd_download_checksum: "208d5f05f1ef2715198904f46c7fde3f9b7bdec6"
-etcd_dir: /usr/local/sbin
+etcd_dir: /usr/sbin
 etcd_data_dir: /var/cache/etcd/state
 etcd_cmd: "{{ etcd_dir }}/etcd"
 
