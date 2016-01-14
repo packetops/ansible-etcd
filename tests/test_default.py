@@ -1,5 +1,5 @@
 def test_etcd_installed(File):
-    for f in ['/usr/local/sbin/etcd', '/usr/local/sbin/etcdctl']:
+    for f in ['/usr/sbin/etcd', '/usr/sbin/etcdctl']:
         file = File(f)
 
         assert file.exists
