@@ -7,6 +7,16 @@ vagrant:
     - name: centos-6.7
       box: bento/centos-6.7
 
+
+  test:
+    # sequence of commands to run when performing `molecule test`
+    sequence:
+      - destroy
+      - create
+      - converge
+      - verify
+      - destroy
+
 #init:
 #    # default platform to populate when doing `molecule init`
 #    platform:
