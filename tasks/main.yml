@@ -8,6 +8,12 @@
   - nmap
   - libselinux-python
 
+# should probably be handled by a security hardening role
+#- name: remove nfs rpc stuff
+#  yum: name={{ item }} state=absent
+#  with_items:
+#  - rpcbind
+
 - name: install facter
   gem: name=facter state=latest
 
@@ -31,6 +37,9 @@
              dest={{ etcd_download_dir }}
              creates="{{ etcd_download_dir }}/{{ etcd_release }}/etcd"
 
+- name: remove etcd download
+  file: path={{ etcd_download_dir }}/{{ etcd_download_filename }} state=absent
+
 - name: copy binaries from archive into etcd dir
   shell: rsync -auv {{ etcd_download_dir }}/{{ etcd_release }}/{{ item }} {{ etcd_dir }}
   with_items:
@@ -44,7 +53,6 @@
 
 - user: name=etcd comment="Etcd daemon" createhome=no home=/var/lib/etcd shell=/bin/sh skeleton=no
 
-## TODO - tighten up security
 - file: path=/var/lib/etcd owner=etcd group=etcd state=directory mode=0755
 
 
